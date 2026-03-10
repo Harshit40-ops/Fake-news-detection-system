@@ -1,0 +1,7 @@
+streamlit
+pandas
+matplotlib
+requests
+streamlit-lottie
+transformers
+torch
