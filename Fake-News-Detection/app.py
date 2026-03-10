@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from streamlit_lottie import st_lottie
 from transformers import pipeline
+import matplotlib
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="AI Fake News Detector System", page_icon="🧠", layout="wide")
 
@@ -270,4 +272,5 @@ backdrop-filter:blur(8px);
 <div class="footer">
 🧠 AI Fake News Detector System| Made by <b>Harshit Sharma</b>
 </div>
+
 """, unsafe_allow_html=True)
