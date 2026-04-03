@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import pandas as pd
-import matplotlib.pyplot as plt
 from streamlit_lottie import st_lottie
 from transformers import pipeline
 
@@ -12,29 +11,15 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---------------- MODEL LOADING ----------------
-@st.cache_resource
-def load_model():
-    return pipeline(
-        "text-classification",
-        model="mrm8488/bert-tiny-finetuned-fake-news-detection"
-    )
-
-try:
-    model = load_model()
-except Exception as e:
-    st.error(f"Model loading failed: {e}")
-    st.stop()
-
-# ---------------- BACKGROUND CSS ----------------
+# ---------------- CUSTOM CSS ----------------
 st.markdown("""
 <style>
-[data-testid="stAppViewContainer"]{
+[data-testid="stAppViewContainer"] {
     background: #000;
     color: white;
 }
 
-.title{
+.title {
     font-size: 50px;
     text-align: center;
     font-weight: bold;
@@ -42,7 +27,7 @@ st.markdown("""
     text-shadow: 0 0 20px #00ffff;
 }
 
-.card{
+.card {
     background: rgba(255,255,255,0.08);
     padding: 30px;
     border-radius: 20px;
@@ -51,7 +36,7 @@ st.markdown("""
     margin-top: 20px;
 }
 
-.footer{
+.footer {
     position: fixed;
     left: 0;
     bottom: 0;
@@ -66,6 +51,20 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# ---------------- MODEL ----------------
+@st.cache_resource
+def load_model():
+    return pipeline(
+        "text-classification",
+        model="mrm8488/bert-tiny-finetuned-fake-news-detection"
+    )
+
+try:
+    model = load_model()
+except Exception as e:
+    st.error(f"Model loading failed: {e}")
+    st.stop()
+
 # ---------------- TITLE ----------------
 st.markdown(
     '<div class="title">🧠 AI Fake News Detector System</div>',
@@ -75,9 +74,9 @@ st.markdown(
 # ---------------- LOTTIE ----------------
 def load_lottie(url):
     try:
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
-            return r.json()
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()
     except:
         return None
 
@@ -94,6 +93,7 @@ news = st.text_area("Paste news headline or article")
 
 # ---------------- DETECTION ----------------
 if st.button("🚀 Detect News"):
+
     if not news.strip():
         st.warning("Please enter some news text first.")
     else:
@@ -113,15 +113,13 @@ if st.button("🚀 Detect News"):
             st.markdown('</div>', unsafe_allow_html=True)
 
             # -------- CONFIDENCE GRAPH --------
-            labels = ["Prediction", "Opposite"]
-            values = [score, 1 - score]
+            chart_data = pd.DataFrame({
+                "Result": ["Prediction", "Opposite"],
+                "Confidence": [score, 1 - score]
+            })
 
-            fig, ax = plt.subplots()
-            ax.bar(labels, values)
-            ax.set_title("AI Confidence Score")
-            ax.set_ylim(0, 1)
-
-            st.pyplot(fig)
+            st.write("### 📈 AI Confidence Score")
+            st.bar_chart(chart_data.set_index("Result"))
 
             # -------- AI EXPLANATION --------
             st.write("### 🤖 AI Explanation")
@@ -154,22 +152,18 @@ try:
 
     with col1:
         if "label" in data.columns:
-            fig, ax = plt.subplots()
-            data["label"].value_counts().plot(kind="bar", ax=ax)
-            ax.set_title("Fake vs Real Distribution")
-            st.pyplot(fig)
+            st.write("### Fake vs Real Distribution")
+            st.bar_chart(data["label"].value_counts())
 
     with col2:
         if "subject" in data.columns:
-            fig, ax = plt.subplots()
-            data["subject"].value_counts().head(10).plot(kind="bar", ax=ax)
-            ax.set_title("Top News Categories")
-            st.pyplot(fig)
+            st.write("### Top News Categories")
+            st.bar_chart(data["subject"].value_counts().head(10))
 
-except Exception as e:
-    st.info("Add dataset file 'news.csv' to show analytics")
+except Exception:
+    st.info("Add 'news.csv' dataset file to show analytics")
 
-# ---------------- LIVE NEWS ----------------
+# ---------------- LIVE NEWS API ----------------
 st.write("## 🌍 Live News Headlines")
 
 API_KEY = "YOUR_NEWS_API_KEY"
@@ -184,7 +178,7 @@ try:
             st.write("###", article.get("title", "No title"))
             st.write(article.get("description", "No description"))
 
-except Exception as e:
+except Exception:
     st.info("Live news unavailable right now")
 
 # ---------------- FOOTER ----------------
