@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import pandas as pd
-from streamlit_lottie import st_lottie
 from transformers import pipeline
 
 # ---------------- PAGE CONFIG ----------------
@@ -51,7 +50,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- MODEL ----------------
+# ---------------- MODEL LOADING ----------------
 @st.cache_resource
 def load_model():
     return pipeline(
@@ -65,27 +64,17 @@ except Exception as e:
     st.error(f"Model loading failed: {e}")
     st.stop()
 
-# ---------------- TITLE ----------------
+# ---------------- HEADER ----------------
 st.markdown(
     '<div class="title">🧠 AI Fake News Detector System</div>',
     unsafe_allow_html=True
 )
 
-# ---------------- LOTTIE ----------------
-def load_lottie(url):
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            return response.json()
-    except:
-        return None
-
-brain = load_lottie(
-    "https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json"
-)
-
-if brain:
-    st_lottie(brain, height=250)
+st.markdown("""
+<div style='text-align:center; padding:10px;'>
+    <p style='font-size:18px;'>Powered by BERT + Transformers</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------- USER INPUT ----------------
 st.write("### Enter News Text")
@@ -112,7 +101,7 @@ if st.button("🚀 Detect News"):
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-            # -------- CONFIDENCE GRAPH --------
+            # -------- CONFIDENCE CHART --------
             chart_data = pd.DataFrame({
                 "Result": ["Prediction", "Opposite"],
                 "Confidence": [score, 1 - score]
@@ -163,7 +152,7 @@ try:
 except Exception:
     st.info("Add 'news.csv' dataset file to show analytics")
 
-# ---------------- LIVE NEWS API ----------------
+# ---------------- LIVE NEWS ----------------
 st.write("## 🌍 Live News Headlines")
 
 API_KEY = "YOUR_NEWS_API_KEY"
